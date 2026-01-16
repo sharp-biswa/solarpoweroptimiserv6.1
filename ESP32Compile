@@ -1,0 +1,131 @@
+#include <WiFi.h>
+#include <BlynkSimpleEsp32.h>
+#include <ESP32Servo.h>
+#include <Wire.h>
+#include <Adafruit_INA219.h>
+
+// --- BLYNK CONFIG ---
+#define BLYNK_AUTH_TOKEN "a-g0bQ4pZWknhT_DZZDSDrqWpYq1Q4CK"
+
+char auth[] = BLYNK_AUTH_TOKEN;
+char ssid[] = "SouryaNova";
+char pass[] = "OMNANDU28";
+
+// --- PINS ---
+// NOTE: If ESP32 fails to boot, unplug servos from pins 12/13, turn on, then replug.
+// Ideally use GPIO 26 & 27 for servos if possible.
+int sweepServoPin = 13;
+int servo360Pin   = 12;
+#define LDR_PIN     35  // Analog Pin for Light Intensity
+
+// --- SERVO OBJECTS ---
+Servo sweepServo;
+Servo servo360;
+
+// 180° Sweep Variables
+int sweepEnable = 0;
+int sweepPos = 0;
+int sweepDir = 1;
+
+// 360° Speed Variables
+int servo360Speed = 90; // 90 is usually STOP for 360 servos
+
+// --- SENSORS ---
+Adafruit_INA219 ina219;
+float current_mA = 0;
+float power_mW = 0;
+int lightIntensityPercent = 0; // For V5
+
+// --- TIMERS ---
+unsigned long lastSensorRead = 0;
+unsigned long lastSweepMove = 0;
+
+void setup() {
+  Serial.begin(115200);
+
+  // Allocate PWM Timers
+  ESP32PWM::allocateTimer(0);
+  ESP32PWM::allocateTimer(1);
+  ESP32PWM::allocateTimer(2);
+  ESP32PWM::allocateTimer(3);
+
+  // 1. Setup Servos
+  sweepServo.setPeriodHertz(50);
+  sweepServo.attach(sweepServoPin, 500, 2400);
+
+  servo360.setPeriodHertz(50);
+  servo360.attach(servo360Pin, 500, 2400);
+  servo360.write(90); // Stop initially
+
+  // 2. Setup INA219
+  if (!ina219.begin()) {
+    Serial.println("INA219 not detected! Check wiring (SDA=21, SCL=22)");
+    // Code continues running even if sensor fails (Demo safety)
+  }
+
+  // 3. Setup LDR
+  pinMode(LDR_PIN, INPUT);
+
+  // 4. Connect to Blynk
+  Blynk.begin(auth, ssid, pass, "blynk.cloud", 80);
+}
+
+void loop() {
+  Blynk.run();
+
+  // ---- Logic 1: 180° Servo Sweep ----
+  if (sweepEnable == 1 && millis() - lastSweepMove >= 15) {
+    lastSweepMove = millis();
+    sweepServo.write(sweepPos);
+    sweepPos += sweepDir;
+
+    if (sweepPos >= 180) sweepDir = -1;
+    if (sweepPos <= 0)   sweepDir = 1;
+  }
+
+  // ---- Logic 2: Read Sensors (Every 1 Second) ----
+  if (millis() - lastSensorRead >= 1000) {
+    lastSensorRead = millis();
+
+    // A. Read Power (INA219)
+    current_mA = ina219.getCurrent_mA();
+    power_mW   = ina219.getPower_mW();
+
+    // B. Read Light (LDR LM393)
+    int rawLdr = analogRead(LDR_PIN);
+    
+    // Convert Raw (0-4095) to Percentage (0-100%)
+    // Note: Usually 4095 is DARK and 0 is BRIGHT on these modules.
+    // We invert it so 100% = Brightest Sun.
+    lightIntensityPercent = map(rawLdr, 4095, 0, 0, 100); 
+    
+    // Clamp values just in case
+    if(lightIntensityPercent < 0) lightIntensityPercent = 0;
+    if(lightIntensityPercent > 100) lightIntensityPercent = 100;
+
+    // C. Debug Print
+    Serial.print("Current: "); Serial.print(current_mA); Serial.print(" mA | ");
+    Serial.print("Power: ");   Serial.print(power_mW);   Serial.print(" mW | ");
+    Serial.print("Light: ");   Serial.print(lightIntensityPercent); Serial.println("%");
+
+    // D. Send to Blynk
+    Blynk.virtualWrite(V2, current_mA);          // Current Gauge
+    Blynk.virtualWrite(V3, power_mW);            // Power Chart
+    Blynk.virtualWrite(V5, lightIntensityPercent); // Light Intensity Gauge (0-100)
+  }
+}
+
+// ---- Blynk App Controls ----
+
+// V0 Switch: Toggle Cleaning Sweep
+BLYNK_WRITE(V0) {
+  sweepEnable = param.asInt();
+}
+
+// V4 Slider: 360 Servo Speed (0-180)
+BLYNK_WRITE(V4) {
+  servo360Speed = param.asInt();
+  servo360.write(servo360Speed);
+  Serial.print("360 Servo Speed: ");
+  Serial.println(servo360Speed);
+}
