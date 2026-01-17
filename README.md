@@ -224,6 +224,8 @@ Free to use, modify, and distribute.
 <img width="1919" height="884" alt="image" src="https://github.com/user-attachments/assets/558de4fc-60fe-4c74-844b-b89be41a72e2" />
 With AI Enginge Recomendation For Optimisation
 <img width="1898" height="876" alt="image" src="https://github.com/user-attachments/assets/391df920-9123-4b78-923a-5049bc852a72" />
+AI Recomendation Detailed for a Single Panel
+![WhatsApp Image 2026-01-17 at 7 28 36 PM](https://github.com/user-attachments/assets/dc67acf8-a3df-41af-a62e-04971033ac36)
 
 <img width="1337" height="864" alt="image" src="https://github.com/user-attachments/assets/75884e7c-6b7d-4b4d-83a1-57cca9448e63" />
 <img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/5f910072-dd70-4b6a-89ee-1a9c09cee3ef" />
