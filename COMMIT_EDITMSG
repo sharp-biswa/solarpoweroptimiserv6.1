@@ -1,0 +1,9 @@
+Update system to fetch solar panel data in parallel from external API
+
+Refactor server/routes.ts to fetch multiple Blynk pins concurrently using Promise.all for improved efficiency, and store individual sensor readings and cleaning status.
+
+Replit-Commit-Author: Agent
+Replit-Commit-Session-Id: 25a0e288-5f30-47e7-a7f9-a9e9f7e39524
+Replit-Commit-Checkpoint-Type: full_checkpoint
+Replit-Commit-Event-Id: d0d354b0-e895-40fb-80fb-bf9ea271558e
+Replit-Commit-Screenshot-Url: https://storage.googleapis.com/screenshot-production-us-central1/cbaac665-037f-4eff-819a-afe431148451/25a0e288-5f30-47e7-a7f9-a9e9f7e39524/1FN79xU
