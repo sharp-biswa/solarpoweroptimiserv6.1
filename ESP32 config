@@ -1,0 +1,154 @@
+#include <WiFi.h>
+#include <BlynkSimpleEsp32.h>
+#include <ESP32Servo.h>
+#include <Wire.h>
+#include <Adafruit_INA219.h>
+
+// -------- BLYNK AUTH --------
+#define BLYNK_AUTH_TOKEN "add_here"
+char auth[] = BLYNK_AUTH_TOKEN;
+char ssid[] = "add_here";
+char pass[] = "add_here";
+
+// -------- PINS --------
+#define SWEEP_SERVO_PIN 26
+#define SERVO360_PIN    27
+#define LDR_PIN         35
+
+// -------- OBJECTS --------
+Servo sweepServo;
+Servo servo360;
+Adafruit_INA219 ina219;
+
+// -------- SETTINGS --------
+int dustThreshold = 2000;
+float currentLimit = 800.0;
+int servo360Neutral = 90;
+int deadZone = 5;
+
+// -------- VARIABLES --------
+int sweepEnable = 0;
+int autoMode = 1;
+int sweepPos = 0;
+int sweepDir = 1;
+
+float current_mA = 0;
+float power_mW = 0;
+bool overload = false;
+bool inaOK = false;
+String dustStatus = "UNKNOWN";
+
+// -------- TIMERS --------
+unsigned long tINA = 0, tLDR = 0, tSweep = 0;
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println("SolarGuard AI Booting...");
+
+  Wire.begin();   // VERY IMPORTANT for INA219
+
+  if (ina219.begin()) {
+    inaOK = true;
+    Serial.println("INA219 Connected");
+  } else {
+    Serial.println("INA219 NOT FOUND");
+  }
+
+  ESP32PWM::allocateTimer(0);
+  ESP32PWM::allocateTimer(1);
+  ESP32PWM::allocateTimer(2);
+  ESP32PWM::allocateTimer(3);
+
+  sweepServo.attach(SWEEP_SERVO_PIN, 500, 2400);
+  servo360.attach(SERVO360_PIN, 500, 2400);
+  servo360.write(servo360Neutral);
+
+  Serial.print("Connecting WiFi: ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, pass);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("\nWiFi Connected");
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
+
+  Blynk.begin(auth, ssid, pass);
+  Serial.println("Blynk Connected");
+}
+
+void loop() {
+  Blynk.run();
+
+  // -------- INA219 --------
+  if (inaOK && millis() - tINA > 1000) {
+    tINA = millis();
+    current_mA = ina219.getCurrent_mA();
+    power_mW = ina219.getPower_mW();
+
+    Serial.print("Current: "); Serial.print(current_mA);
+    Serial.print(" mA  Power: "); Serial.print(power_mW); Serial.println(" mW");
+
+    if (current_mA > currentLimit) {
+      overload = true;
+      sweepEnable = 0;
+      servo360.write(servo360Neutral);
+    } else {
+      overload = false;
+    }
+
+    Blynk.virtualWrite(V2, current_mA);
+    Blynk.virtualWrite(V3, power_mW);
+  }
+
+  // -------- LDR --------
+  if (millis() - tLDR > 500) {
+    tLDR = millis();
+    int dust = analogRead(LDR_PIN);
+
+    Serial.print("LDR: "); Serial.println(dust);
+
+    if (dust > dustThreshold) {
+      dustStatus = "DUSTY / NIGHT";
+      if (autoMode && !overload) sweepEnable = 1;
+    } else {
+      dustStatus = "CLEAN / DAY";
+      if (autoMode) sweepEnable = 0;
+    }
+
+    Blynk.virtualWrite(V5, dustStatus);
+    Blynk.virtualWrite(V6, dust);
+  }
+
+  // -------- WIPER --------
+  if (sweepEnable && millis() - tSweep > 15) {
+    tSweep = millis();
+    sweepServo.write(sweepPos);
+    sweepPos += sweepDir;
+    if (sweepPos >= 180) sweepDir = -1;
+    if (sweepPos <= 0)   sweepDir = 1;
+  }
+
+  // -------- STATUS --------
+  if (overload)
+    Blynk.virtualWrite(V8, "OVERLOAD! MOTOR STOPPED");
+  else
+    Blynk.virtualWrite(V8, "NORMAL");
+}
+
+// -------- BLYNK CONTROLS --------
+BLYNK_WRITE(V0) { if (!autoMode) sweepEnable = param.asInt(); }
+BLYNK_WRITE(V4) {
+  int v = param.asInt();
+  if (abs(v - servo360Neutral) <= deadZone) servo360.write(servo360Neutral);
+  else if (!overload) servo360.write(v);
+}
+BLYNK_WRITE(V7) { autoMode = param.asInt(); }
+
+BLYNK_CONNECTED() {
+  Blynk.syncVirtual(V0, V4, V7);
+}
