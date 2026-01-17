@@ -1,4 +1,4 @@
-🌞 Souryanova Solar Guard
+<img width="960" height="1280" alt="image" src="https://github.com/user-attachments/assets/efad22e8-f448-4fd9-a3f3-19256321d9b1" />🌞 Souryanova Solar Guard
 ESP32 Edge Firmware for Smart Solar Panel Cleaning & Tilt Control
 
 Souryanova Solar Guard is the ESP32-based edge controller firmware used in the Souryanova Smart Solar Farm Management Optimiser System.
@@ -220,4 +220,8 @@ OTA firmware updates
 MIT License
 Free to use, modify, and distribute.
 <img width="1600" height="1007" alt="image" src="https://github.com/user-attachments/assets/cd0d839c-4e85-48db-b69c-190f9a953a38" />
+<img width="1600" height="900" alt="image" src="https://github.com/user-attachments/assets/5f910072-dd70-4b6a-89ee-1a9c09cee3ef" />
+<img width="960" height="1280" alt="image" src="https://github.com/user-attachments/assets/534ecff7-ebee-4bd8-b24a-9bd97b7a3c50" />
+
+
 
