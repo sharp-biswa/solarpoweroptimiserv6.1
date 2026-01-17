@@ -219,3 +219,5 @@ OTA firmware updates
 
 MIT License
 Free to use, modify, and distribute.
+<img width="1600" height="1007" alt="image" src="https://github.com/user-attachments/assets/cd0d839c-4e85-48db-b69c-190f9a953a38" />
+
