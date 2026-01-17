@@ -3,9 +3,9 @@
    ========================================================== */
 
 // 1. TEMPLATE INFO (MATCHING YOUR SCREENSHOTS)
-#define BLYNK_TEMPLATE_ID "TMPL30Zm4WQ_o"
-#define BLYNK_TEMPLATE_NAME "SouryaNova"
-#define BLYNK_AUTH_TOKEN "a-g0bQ4pZWknhT_DZZDSDrqWpYq1Q4CK"
+#define BLYNK_TEMPLATE_ID "addN/A"
+#define BLYNK_TEMPLATE_NAME "addN/A"
+#define BLYNK_AUTH_TOKEN "addN/A"
 
 #define BLYNK_PRINT Serial
 #include <WiFi.h>
@@ -18,8 +18,8 @@
 // Set this to true so the dashboard always shows numbers (580mA)
 bool DEMO_MODE = true; 
 
-char ssid[] = "SouryaNova";  
-char pass[] = "OMNANDU28";   
+char ssid[] = "addN/A";  
+char pass[] = "addN/A";   
 
 // --- PINS ---
 #define SWEEP_SERVO_PIN 26
