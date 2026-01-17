@@ -1,110 +1,112 @@
-Souryanova- Smart Solar Farm Management Optimiser System
+🌞 Souryanova Solar Guard
+ESP32 Edge Firmware for Smart Solar Panel Cleaning & Tilt Control
 
-Smart Solar Farm Management Optimiser System is a comprehensive management and monitoring platform for solar farms, leveraging AI to optimize energy output, predict maintenance needs, and automate hardware control.
+Souryanova Solar Guard is the ESP32-based edge controller firmware used in the Souryanova Smart Solar Farm Management Optimiser System.
+It handles real-time sensing, safety-critical motor control, and cloud connectivity for solar panel cleaning and orientation.
 
-## 🚀 Features
+This firmware is designed to work with physical hardware as well as a Wokwi digital twin, ensuring safe testing and deployment.
 
-- **Real-time Monitoring**: Track energy output, efficiency, temperature, and dust levels for up to 200 solar panels.
-- **AI-Powered Analytics**:
-  - Efficiency forecasting using machine learning models.
-  - Degradation risk assessment (Low/Medium/High).
-  - Smart recommendations for cleaning, tilt adjustment, and maintenance.
-- **Hardware Integration**:
-  - **Blynk IoT**: Real-time data polling and control for cleaning mechanisms.
-  - **Wokwi Simulator**: Digital twin integration for sensor simulation.
-  - **Auto-Tilt System**: AI-optimized or time-based panel orientation control.
-- **Smart Alerts**: Automated notifications for critical efficiency drops, high dust levels, or hardware overloads.
-- **PDF Reporting**: Generate detailed maintenance and performance reports.
-- **Weather Integration**: Correlates solar performance with local weather data (OpenWeatherMap).
+📌 Key Responsibilities
 
-## 🛠️ Tech Stack
+Automatic solar panel cleaning using a 180° servo wiper
 
-- **Frontend**: React, Vite, Tailwind CSS, Shadcn UI, Framer Motion, Recharts.
-- **Backend**: Node.js, Express, WebSocket (WS).
-- **Database**: PostgreSQL with Drizzle ORM.
-- **AI/ML**: Custom TypeScript-based AI Engine for predictive analytics.
-- **IoT**: Blynk API integration, Wokwi Simulator.
+Safe control of a 360° continuous rotation motor for panel orientation
 
-## 🏁 Getting Started
+Dust detection using an LDR sensor
 
-### Prerequisites
+Power & current monitoring using INA219
 
-- Node.js (v20 or higher)
-- PostgreSQL database
+Cloud-based control & telemetry via Blynk IoT
 
-### Environment Variables
+Built-in safety locks and dead-zone logic to prevent runaway motors
 
-Create a `.env` file or set the following in your environment:
-
-```env
-DATABASE_URL=your_postgresql_connection_string
-WEATHER_API_KEY=your_openweathermap_api_key (optional, defaults to demo)
-```
-
-### Installation
-
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-2. Push the database schema:
-   ```bash
-   npm run db:push
-   ```
-
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-## 🏗️ Project Structure
-
-- `client/`: React frontend application.
-- `server/`: Express backend, AI engine, and IoT integrations.
-- `shared/`: Shared TypeScript types and Drizzle database schema.
-
-## 📜 License
-
-MIT
-
-🔌 ESP32 Hardware Configuration (Souryanova AI Edge Node)
-
-Souryanova AI uses an ESP32 as an edge controller for real-time sensing and actuation of solar panel cleaning and tilt mechanisms.
-
-📡 Supported Sensors & Actuators
-Component	Model	Purpose	ESP32 Pin
-Current Sensor	INA219	Panel current & power monitoring	I2C (SDA 21, SCL 22)
-Dust Sensor	LM393 / LDR	Dust / Day-Night detection	GPIO 35 (ADC)
-Wiper Servo	SG90 (180°)	Panel cleaning arm	GPIO 26
-Tilt Servo	Continuous (360°)	Panel orientation	GPIO 27
-🔐 Blynk IoT Cloud Mapping
-Function	Datastream	Type
-Wiper Manual Control	V0	Button (0/1)
-Panel Current	V2	Gauge (mA)
-Panel Power	V3	Gauge (mW)
-Tilt Motor Control	V4	Slider (0–180)
-Dust Status	V5	Label (String)
-Raw Dust Level	V6	Gauge
-Auto / Manual Mode	V7	Button
-Safety Status	V8	Label
-⚙️ ESP32 Firmware Features
+🧠 Firmware Features
+✅ Core Features
 
 Auto dust-based cleaning activation
 
-AI-assisted tilt control via Blynk cloud
+Manual override via Blynk dashboard
 
-Overcurrent protection with automatic motor shutdown
+Auto / Manual operation modes
 
-Offline operation with cloud re-sync
+Real-time telemetry streaming
 
-Real-time telemetry streaming to Souryanova AI backend
+Offline-safe logic (no blocking delays)
 
-🧪 Wokwi Digital Twin (Optional)
+🛡️ Safety Features
 
-For simulation without physical hardware:
+Forced motor stop on boot
 
-Create ESP32 project on https://wokwi.com
+Dead-zone logic for 360° motor
+
+Platform safety lock switch
+
+Neutral calibration for continuous servo
+
+Automatic wiper parking
+
+🔌 Hardware Requirements
+Supported Components
+Component	Model	Purpose
+Microcontroller	ESP32	Edge controller
+Current Sensor	INA219	Current & power monitoring
+Dust Sensor	LDR / LM393	Dust & light detection
+Wiper Servo	SG90 (180°)	Panel cleaning
+Tilt Motor	360° Continuous Servo	Panel orientation
+📍 Pin Configuration
+Function	ESP32 Pin
+Wiper Servo (180°)	GPIO 26
+Tilt Servo (360°)	GPIO 27
+Dust Sensor (LDR)	GPIO 35 (ADC)
+INA219 SDA	GPIO 21
+INA219 SCL	GPIO 22
+☁️ Blynk IoT Integration
+Virtual Pin Mapping
+Virtual Pin	Function	Type
+V0	Manual Wiper Control	Button
+V1	Dust Percentage	Gauge
+V2	Panel Current (mA)	Gauge
+V3	Panel Power (mW)	Gauge
+V4	Platform Rotation	Slider (0–180)
+V5	Dust Status	Label
+V7	Auto / Manual Mode	Button
+V9	Platform Safety Lock	Button
+⚙️ Operating Logic
+🔄 Auto Cleaning Logic
+
+Triggered when:
+
+Auto Mode (V7) is ON
+
+Dust level > 70%
+
+Automatically starts wiper movement
+
+Stops and parks wiper when dust is low
+
+🧭 360° Motor Control Logic
+
+Neutral position calibrated at 90
+
+Dead-zone applied to prevent slow creeping
+
+Motor moves only if Safety Lock (V9) is enabled
+
+Slider values near neutral force a full stop
+
+if (val > 80 && val < 100) {
+  servo360.write(90);
+}
+
+🧪 Simulation (Wokwi Digital Twin)
+
+This firmware can run without physical hardware using Wokwi.
+
+Wokwi Setup Steps
+
+Go to https://wokwi.com
+
+Create a new ESP32 project
 
 Add:
 
@@ -112,36 +114,108 @@ INA219
 
 LDR
 
-2x Servo Motors
+2 Servo motors
 
-Flash the same firmware used on physical ESP32
+Upload this firmware
 
-Connect to Blynk Cloud for full system simulation
+Connect to Blynk Cloud
 
-🌐 Replit & Web Dashboard Integration
+✔ Ideal for testing logic, UI, and AI integration
 
-Souryanova AI frontend (hosted on Replit or Vercel) pulls data from:
+🛠️ Firmware Configuration
+Blynk Credentials
 
-Blynk REST API for real-time telemetry
+Update these before flashing:
 
-WebSocket bridge for live dashboard updates
+#define BLYNK_TEMPLATE_ID "TMPLxxxxxx"
+#define BLYNK_TEMPLATE_NAME "SouryaNova"
+#define BLYNK_AUTH_TOKEN "YOUR_BLYNK_TOKEN"
 
-PostgreSQL for historical trend analysis
+WiFi Credentials
+char ssid[] = "YOUR_WIFI_NAME";
+char pass[] = "YOUR_WIFI_PASSWORD";
 
-This allows:
+⚠️ Calibration Guidelines
+360° Servo Neutral Calibration
 
-Cloud visualization of current, power, dust, tilt angle
+Default: 90
 
-AI inference results overlaid with real sensor data
+If motor slowly rotates at stop:
 
-Automated cleaning & tilt scheduling from web UI
+Try 88, 89, 91, or 92
 
-🚨 Safety & Calibration Notes
+Dust Sensor
 
-Calibrate 360° servo neutral (typically 88–92)
+LDR threshold must be tuned per site
 
-Set overcurrent limit in firmware (default: 800mA)
+Use stable pull-down resistor on GPIO35
 
-LDR threshold must be tuned per installation
+Current Safety
 
-Use pull-down resistor on GPIO35 for noise stability
+Recommended max current limit: 800mA
+
+Future-ready for automatic shutdown logic
+
+🧩 Code Structure Overview
+
+setup()
+Initializes motors, sensors, WiFi, and Blynk
+
+loop()
+
+Sensor polling (1s interval)
+
+Auto-clean decision logic
+
+Servo motion handling
+
+Cloud communication
+
+BLYNK_WRITE()
+Handles all remote control inputs
+
+📈 System Integration
+
+This firmware integrates with:
+
+Souryanova Backend (via Blynk + WebSocket bridge)
+
+AI analytics engine
+
+Web dashboard for visualization & control
+
+PostgreSQL for historical analysis
+
+🚀 Deployment Readiness
+
+✔ Tested for real hardware
+✔ Safe for continuous operation
+✔ Simulation-ready
+✔ Scalable for multiple nodes
+
+Suitable for:
+
+Solar farms
+
+Rooftop solar systems
+
+Research & academic projects
+
+Hackathons & demonstrations
+
+🔮 Future Enhancements
+
+Overcurrent auto-shutdown
+
+EEPROM/NVS-based calibration storage
+
+AI-driven autonomous tilt control
+
+ESP32-S3 edge AI upgrade
+
+OTA firmware updates
+
+📜 License
+
+MIT License
+Free to use, modify, and distribute.
